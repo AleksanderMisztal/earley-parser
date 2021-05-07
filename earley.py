@@ -1,6 +1,8 @@
-from ast import Ast
 from grammar import Grammar
 from edge import Edge
+
+def isNonterminal(token: str):
+  return token == token.upper()
 
 class Parser:
   dot = '*'
@@ -9,41 +11,37 @@ class Parser:
       self.g = grammar
       self.edges: list[Edge] = []
 
-  def parse(self, tokens: 'list[str]'):
-    g = self.g
-    self.edges = []
-    self.edges.append(Edge(g.start, [self.dot]+g.productions[g.start][0], 0, 0, []))
-    self.predict(0)
-    print('\n'.join([e.__str__() for e in self.edges]))
-    return Ast('X',[])
+  def addEdge(self, edge):
+    if edge not in self.edges:
+      self.edges.append(edge)
+      print(len(self.edges)-1, ' ', edge)
   
-  def predict(self, begin):
-    it = begin
-    while it < len(self.edges):
-      e = self.edges[it]
-      it+=1
-      nt_idx = e.deps.index(self.dot) + 1
-      if nt_idx == len(e.deps): continue
-      nt = e.deps[nt_idx]
-      if nt not in self.g.productions: continue
-      for prod in self.g.productions[nt]:
-        newEdge = Edge(nt, [self.dot]+prod, e.end, e.end, [])
-        if newEdge not in self.edges:
-          self.edges.append(newEdge)
-  
-  def scan(self, begin):
-    it = begin
-    while it < len(self.edges):
-      e = self.edges[it]
-      it+=1
-      nt_idx = e.deps.index(self.dot) + 1
-      if nt_idx == len(e.deps): continue
-      nt = e.deps[nt_idx]
-      if nt not in self.g.productions: continue
-      if  in self.g.termProds[nt]:
-        newEdge = Edge(nt, nt+[self.dot], e.end, e.end, [])
-        if newEdge not in self.edges:
-          self.edges.append(newEdge)
+  def parse(self, words: 'list[str]'):
+    self.addEdge(Edge(self.g.start, [self.dot]+self.g.productions[self.g.start][0], 0, 0, []))
+    for word in words:
+      print(word)
+      it = 0
+      while it < len(self.edges):
+        e = self.edges[it]
+        et_idx = e.deps.index(self.dot) + 1
+        if et_idx < len(e.deps):
+          token = e.deps[et_idx]
+          if isNonterminal(token):
+            for prod in self.g.productions[token]:
+              self.addEdge(Edge(token, [self.dot]+prod, e.end, e.end, [it,'predict']))
+          else:
+            if token == word and token in [ts[0] for ts in self.g.productions[e.head]]:
+              self.addEdge(Edge(e.head, [token, self.dot], e.start, e.end+1, [it, 'scan']))
+        else:
+          for oe in self.edges:
+            if oe.getAfterDot() == e.head:
+              newDeps = [d for d in oe.deps]
+              idx = newDeps.index(self.dot)
+              newDeps[idx] = newDeps[idx+1]
+              newDeps[idx+1] = self.dot
+              self.addEdge(Edge(oe.head, newDeps, oe.start, e.end, [it,'complete']))
+          break
+        it+=1
   
     
 
