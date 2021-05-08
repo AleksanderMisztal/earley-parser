@@ -13,7 +13,7 @@ class Parser:
   def parse(self, words: 'list[str]'):
     self.initParse(len(words))
     for k, word in enumerate(words + ['END']):
-      print(word)
+      #print(word)
       it = 0
       while it < len(self.edges[k]):
         e = self.edges[k][it]
@@ -52,4 +52,4 @@ class Parser:
   def addEdge(self, k, edge):
     if edge not in self.edges[k]:
       self.edges[k].append(edge)
-      print(len(self.edges[k])-1, ' ', edge)
+      #print(len(self.edges[k])-1, ' ', edge)

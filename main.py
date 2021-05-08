@@ -1,4 +1,3 @@
-from east import Ast
 from earley import Parser
 
 start = 'S'
@@ -11,7 +10,15 @@ productions = {
   'P': [['in']],
   'V': [['can'], ['fish']]
 }
+p = Parser(start, productions)
 
-asts = Parser(start, productions).parse(['they', 'can', 'fish'])
-for ast in asts:
-  print('ast: ', ast)
+tests = [
+  ['they', 'can', 'fish'],
+  ['they', 'can', 'fish', 'in', 'can'],
+  ['fish', 'can', 'fish']
+]
+for t in tests:
+  print(' '.join(t))
+  asts = p.parse(t)
+  for ast in asts:
+    print('ast: ', ast)
