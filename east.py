@@ -1,4 +1,3 @@
-
 class Ast:
   def __init__(self, symbol, children) -> None:
       self.symbol = symbol

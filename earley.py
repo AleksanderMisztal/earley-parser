@@ -1,47 +1,55 @@
-from grammar import Grammar
 from edge import Edge
+from east import Ast
 
 def isNonterminal(token: str):
   return token == token.upper()
 
 class Parser:
-  dot = '*'
-  
-  def __init__(self, grammar: Grammar):
-      self.g = grammar
-      self.edges: list[Edge] = []
-
-  def addEdge(self, edge):
-    if edge not in self.edges:
-      self.edges.append(edge)
-      print(len(self.edges)-1, ' ', edge)
+  def __init__(self, start, prods):
+      self.start = start
+      self.prods = prods
+      self.edges: list[list[Edge]] = None
   
   def parse(self, words: 'list[str]'):
-    self.addEdge(Edge(self.g.start, [self.dot]+self.g.productions[self.g.start][0], 0, 0, []))
-    for word in words:
+    self.initParse(len(words))
+    for k, word in enumerate(words + ['END']):
       print(word)
       it = 0
-      while it < len(self.edges):
-        e = self.edges[it]
-        et_idx = e.deps.index(self.dot) + 1
-        if et_idx < len(e.deps):
-          token = e.deps[et_idx]
+      while it < len(self.edges[k]):
+        e = self.edges[k][it]
+        dot_idx = e.deps.index('*')
+        if dot_idx+1 < len(e.deps):
+          if k == len(words): 
+            it+= 1
+            continue
+          token = e.deps[dot_idx+1]
           if isNonterminal(token):
-            for prod in self.g.productions[token]:
-              self.addEdge(Edge(token, [self.dot]+prod, e.end, e.end, [it,'predict']))
+            for prod in self.prods[token]:
+              self.addEdge(k, Edge(token, ['*']+prod, k, [it,'predict']))
           else:
-            if token == word and token in [ts[0] for ts in self.g.productions[e.head]]:
-              self.addEdge(Edge(e.head, [token, self.dot], e.start, e.end+1, [it, 'scan']))
+            if token == word and token in [ts[0] for ts in self.prods[e.head]]:
+              self.addEdge(k+1, Edge(e.head, [token, '*'], e.start, [it, 'scan']))
         else:
-          for oe in self.edges:
+          for oe in self.edges[e.start]:
             if oe.getAfterDot() == e.head:
               newDeps = [d for d in oe.deps]
-              idx = newDeps.index(self.dot)
+              idx = newDeps.index('*')
               newDeps[idx] = newDeps[idx+1]
-              newDeps[idx+1] = self.dot
-              self.addEdge(Edge(oe.head, newDeps, oe.start, e.end, [it,'complete']))
-          break
+              newDeps[idx+1] = '*'
+              ne = Edge(oe.head, newDeps, oe.start, [it,'complete'])
+              self.addEdge(k, ne)
+              if ne.start == 0 and k == len(words):
+                yield ne
         it+=1
   
-    
+  def initParse(self, length):
+    self.edges = [[] for _ in range(length+1)]
+    s = self.start
+    sProds = self.prods[s][0]
+    self.addEdge(0, Edge(s, ['*']+sProds, 0, Ast(s, sProds)))
 
+
+  def addEdge(self, k, edge):
+    if edge not in self.edges[k]:
+      self.edges[k].append(edge)
+      print(len(self.edges[k])-1, ' ', edge)

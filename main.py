@@ -1,8 +1,5 @@
-from grammar import Grammar
 from earley import Parser
 
-nonterminals = ['S', 'NP', 'VP', 'PP', 'N', 'V', 'P']
-terminals = ['can', 'fish', 'they', 'in', 'rivers']
 start = 'S'
 productions = {
   'S': [['NP', 'VP']],
@@ -14,7 +11,6 @@ productions = {
   'V': [['can'], ['fish']]
 }
 
-g = Grammar(nonterminals, terminals, start, productions)
-
-ast = Parser(g).parse(['they', 'can', 'fish'])
-#print(ast)
+asts = Parser(start, productions).parse(['they', 'can', 'fish'])
+for ast in asts:
+  print('ast: ', ast)
