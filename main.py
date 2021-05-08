@@ -1,3 +1,4 @@
+from east import Ast
 from earley import Parser
 
 start = 'S'

@@ -1,9 +1,12 @@
+from east import Ast
+
+
 class Edge:
   def __init__(self, head, deps, start, ast) -> None:
     self.head: str = head
     self.deps: list[str] = deps
     self.start: int = start
-    self.ast = ast
+    self.ast: Ast = ast
     
   def getAfterDot(self) -> str:
     nt_idx = self.deps.index('*') + 1

@@ -19,16 +19,17 @@ class Parser:
         e = self.edges[k][it]
         dot_idx = e.deps.index('*')
         if dot_idx+1 < len(e.deps):
+          # no more tokens, should only complete
           if k == len(words): 
             it+= 1
             continue
           token = e.deps[dot_idx+1]
           if isNonterminal(token):
             for prod in self.prods[token]:
-              self.addEdge(k, Edge(token, ['*']+prod, k, [it,'predict']))
+              self.addEdge(k, Edge(token, ['*']+prod, k, Ast(token, prod)))
           else:
             if token == word and token in [ts[0] for ts in self.prods[e.head]]:
-              self.addEdge(k+1, Edge(e.head, [token, '*'], e.start, [it, 'scan']))
+              self.addEdge(k+1, Edge(e.head, [token, '*'], e.start, Ast(e.head, [token])))
         else:
           for oe in self.edges[e.start]:
             if oe.getAfterDot() == e.head:
@@ -36,10 +37,10 @@ class Parser:
               idx = newDeps.index('*')
               newDeps[idx] = newDeps[idx+1]
               newDeps[idx+1] = '*'
-              ne = Edge(oe.head, newDeps, oe.start, [it,'complete'])
+              ne = Edge(oe.head, newDeps, oe.start, oe.ast.replaceLeaf(idx, e.ast))
               self.addEdge(k, ne)
               if ne.start == 0 and k == len(words):
-                yield ne
+                yield ne.ast
         it+=1
   
   def initParse(self, length):
@@ -47,7 +48,6 @@ class Parser:
     s = self.start
     sProds = self.prods[s][0]
     self.addEdge(0, Edge(s, ['*']+sProds, 0, Ast(s, sProds)))
-
 
   def addEdge(self, k, edge):
     if edge not in self.edges[k]:
