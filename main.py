@@ -6,7 +6,7 @@ productions = {
   'NP': [['N', 'PP'], ['N']],
   'PP': [['P', 'NP']],
   'VP': [['VP', 'PP'], ['V', 'VP'], ['V', 'NP'], ['V']],
-  'N': [['they'],['can'], ['fish'], ['rivers']],
+  'N': [['they'],['can'], ['fish'], ['rivers'], ['december']],
   'P': [['in']],
   'V': [['can'], ['fish']]
 }
@@ -15,7 +15,9 @@ p = Parser(start, productions)
 tests = [
   ['they', 'can', 'fish'],
   ['they', 'can', 'fish', 'in', 'can'],
-  ['fish', 'can', 'fish']
+  ['fish', 'can', 'fish'],
+  ['they', 'can', 'fish', 'in', 'rivers'],
+  ['they', 'can', 'fish', 'in', 'rivers', 'in', 'december']
 ]
 for t in tests:
   print(' '.join(t))
